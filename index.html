@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f2f2ed" />
+    <meta
+      name="description"
+      content="Doriya 2FA 是一个完全在浏览器本地运行的在线 TOTP 验证器。粘贴密钥，即刻生成验证码，不上传、不保存。"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Doriya 2FA — 浏览器里的验证码</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#generator">跳至验证器</a>
+    <div class="page-grid" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="/" aria-label="Doriya 2FA 首页">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M2 2h28v28H2z" fill="currentColor" />
+            <path d="M8 8h5v16H8zM19 8h5v5h-5zM19 17h5v7h-5z" fill="#f2f2ed" />
+          </svg>
+          <span class="brand-name">Doriya</span>
+          <span class="brand-slash">/</span>
+          <span class="brand-product">2FA</span>
+        </a>
+
+        <nav class="main-nav" aria-label="主导航">
+          <a class="is-active" href="#generator">验证器</a>
+          <a href="#how-it-works">工作原理</a>
+          <a href="#privacy">隐私</a>
+        </nav>
+
+        <div class="header-actions">
+          <span class="local-state"><i aria-hidden="true"></i>本地运行</span>
+          <button
+            class="button button--sm button--outline header-scan"
+            type="button"
+            data-action="open-qr"
+          >
+            扫描导入
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="shell hero-inner">
+          <div class="hero-copy">
+            <div class="eyebrow hero-reveal" style="--delay: 0.04s">
+              <span>01</span>
+              <span class="eyebrow-rule"></span>
+              <span>TOTP / RFC 6238</span>
+            </div>
+            <h1 class="hero-reveal" style="--delay: 0.1s">
+              <span>验证码，</span>
+              <span class="hero-emphasis">此刻生成。</span>
+            </h1>
+            <p class="hero-description hero-reveal" style="--delay: 0.18s">
+              一个不经过服务器的在线 TOTP 验证器。粘贴密钥，立即获取，关闭即忘。
+            </p>
+            <div class="hero-actions hero-reveal" style="--delay: 0.25s">
+              <a class="button button--dark" href="#generator">
+                打开验证器
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              </a>
+              <button class="button button--ghost" type="button" data-action="open-qr">
+                从二维码导入
+              </button>
+            </div>
+          </div>
+
+          <div class="signal-card hero-reveal" style="--delay: 0.22s" aria-hidden="true">
+            <div class="signal-card-top">
+              <span>AUTH_SIGNAL</span>
+              <span>LOCAL / 001</span>
+            </div>
+            <div class="signal-orbit">
+              <div class="signal-ring signal-ring--outer"></div>
+              <div class="signal-ring signal-ring--inner"></div>
+              <div class="signal-crosshair signal-crosshair--one"></div>
+              <div class="signal-crosshair signal-crosshair--two"></div>
+              <div class="signal-counter">
+                <span>TIME WINDOW</span>
+                <strong id="hero-countdown">30</strong>
+                <span>SEC</span>
+              </div>
+            </div>
+            <div class="signal-card-bottom">
+              <span id="signal-algorithm">HMAC-SHA1</span>
+              <span id="signal-digits">6 DIGITS</span>
+              <span id="signal-period">30 SEC</span>
+            </div>
+          </div>
+
+          <span class="hero-mark hero-mark--left" aria-hidden="true">+</span>
+          <span class="hero-mark hero-mark--right" aria-hidden="true">+</span>
+        </div>
+      </section>
+
+      <section class="generator-section" id="generator">
+        <div class="shell">
+          <article class="console" aria-labelledby="console-title">
+            <h2 class="sr-only" id="console-title">TOTP 验证码生成器</h2>
+            <header class="console-bar">
+              <div class="console-bar-left">
+                <span class="console-grip" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i>
+                </span>
+                <span>DORIYA_AUTH / SESSION_01</span>
+              </div>
+              <div class="console-bar-right">
+                <span class="live-tag"><i aria-hidden="true"></i>LIVE</span>
+                <span>NO CLOUD</span>
+              </div>
+            </header>
+
+            <div class="console-body">
+              <section class="code-panel">
+                <div class="panel-kicker">
+                  <span>01</span>
+                  <span>CURRENT CODE</span>
+                  <span class="panel-kicker-line"></span>
+                </div>
+
+                <div class="account-head">
+                  <span class="account-avatar" id="account-avatar">D</span>
+                  <div class="account-meta">
+                    <h2 id="issuer-name">Doriya Demo</h2>
+                    <p id="account-name">demo@doriya.dev</p>
+                  </div>
+                  <button
+                    class="share-button"
+                    id="share-link"
+                    type="button"
+                    title="密钥只包含在链接的 # 片段中"
+                  >
+                    <svg viewBox="0 0 18 18" aria-hidden="true">
+                      <path d="M7.2 10.8 10.8 7.2M6.4 12.9l-1.1 1.1a2.75 2.75 0 0 1-3.9-3.9l2.2-2.2a2.75 2.75 0 0 1 3.9 0M11.6 5.1l1.1-1.1a2.75 2.75 0 0 1 3.9 3.9l-2.2 2.2a2.75 2.75 0 0 1-3.9 0" />
+                    </svg>
+                    <span>私密链接</span>
+                  </button>
+                </div>
+
+                <button
+                  class="code-display"
+                  id="copy-code"
+                  type="button"
+                  aria-label="复制当前验证码"
+                >
+                  <span class="code-digits" id="code-digits" aria-live="polite">
+                    <span class="code-group" id="code-group-a">— — —</span>
+                    <span class="code-separator" aria-hidden="true"></span>
+                    <span class="code-group" id="code-group-b">— — —</span>
+                  </span>
+                  <span class="copy-hint">
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <rect x="5" y="5" width="8" height="8" />
+                      <path d="M3 10H2V2h8v1" />
+                    </svg>
+                    点击复制
+                  </span>
+                </button>
+
+                <div class="countdown-block">
+                  <div class="countdown-labels">
+                    <span>VALID FOR</span>
+                    <span><strong id="seconds-remaining">30</strong> SEC</span>
+                  </div>
+                  <div class="progress-track" aria-hidden="true">
+                    <span id="progress-fill"></span>
+                  </div>
+                </div>
+
+                <div class="code-meta">
+                  <span id="configuration-label">SHA1 · 6 DIGITS · 30S</span>
+                  <span id="local-time">LOCAL TIME 00:00:00</span>
+                </div>
+              </section>
+
+              <aside class="setup-panel">
+                <div class="panel-kicker">
+                  <span>02</span>
+                  <span>SECRET INPUT</span>
+                  <span class="panel-kicker-line"></span>
+                </div>
+
+                <div class="setup-heading">
+                  <h2>载入你的密钥</h2>
+                  <p>支持 Base32 密钥或完整的 otpauth:// 链接。</p>
+                </div>
+
+                <form id="secret-form" novalidate>
+                  <label for="secret-input">验证器密钥</label>
+                  <div class="secret-input-wrap">
+                    <input
+                      id="secret-input"
+                      name="secret"
+                      type="password"
+                      autocomplete="off"
+                      autocapitalize="characters"
+                      spellcheck="false"
+                      placeholder="例如 JBSWY3DPEHPK3PXP"
+                      aria-describedby="secret-help form-error"
+                    />
+                    <button
+                      class="input-icon"
+                      id="toggle-secret"
+                      type="button"
+                      aria-label="显示密钥"
+                    >
+                      <svg class="eye-open" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M2 10s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5Z" />
+                        <circle cx="10" cy="10" r="2.2" />
+                      </svg>
+                      <svg class="eye-closed" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="m3 3 14 14M8.2 5.2A8.7 8.7 0 0 1 10 5c5 0 8 5 8 5a13 13 0 0 1-2.4 2.8M12.5 14.7A8 8 0 0 1 10 15c-5 0-8-5-8-5a13 13 0 0 1 3-3.4" />
+                      </svg>
+                    </button>
+                    <button
+                      class="input-icon input-icon--paste"
+                      id="paste-secret"
+                      type="button"
+                      aria-label="从剪贴板粘贴"
+                      title="从剪贴板粘贴"
+                    >
+                      <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M7 5H5v12h10V5h-2M7 3h6v4H7z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="field-help" id="secret-help">
+                    空格和短横线会自动忽略。
+                  </p>
+                  <p class="form-error" id="form-error" role="alert"></p>
+
+                  <div class="setup-actions">
+                    <button class="button button--dark" id="generate-button" type="submit">
+                      <span>生成验证码</span>
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M3 8h10M9 4l4 4-4 4" />
+                      </svg>
+                    </button>
+                    <button
+                      class="button button--outline"
+                      type="button"
+                      data-action="open-qr"
+                    >
+                      二维码
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+
+                <details class="advanced-settings">
+                  <summary>
+                    <span>高级参数</span>
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="m4 6 4 4 4-4" />
+                    </svg>
+                  </summary>
+                  <div class="advanced-grid">
+                    <label>
+                      算法
+                      <select id="algorithm-select">
+                        <option value="SHA-1">SHA-1</option>
+                        <option value="SHA-256">SHA-256</option>
+                        <option value="SHA-512">SHA-512</option>
+                      </select>
+                    </label>
+                    <label>
+                      位数
+                      <select id="digits-select">
+                        <option value="6">6 位</option>
+                        <option value="8">8 位</option>
+                      </select>
+                    </label>
+                    <label>
+                      周期
+                      <select id="period-select">
+                        <option value="30">30 秒</option>
+                        <option value="60">60 秒</option>
+                        <option value="15">15 秒</option>
+                      </select>
+                    </label>
+                  </div>
+                </details>
+
+                <div class="privacy-note">
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M10 2 3.5 5v4.6c0 4 2.7 6.7 6.5 8.4 3.8-1.7 6.5-4.4 6.5-8.4V5L10 2Z" />
+                    <path d="m7.4 10 1.8 1.8 3.5-3.7" />
+                  </svg>
+                  <div>
+                    <strong>密钥不离开此标签页</strong>
+                    <span>无账号、无后端、无持久化存储。</span>
+                  </div>
+                </div>
+
+                <button class="text-button" id="use-demo" type="button">
+                  使用示例密钥
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </aside>
+            </div>
+
+            <footer class="console-footer">
+              <span>
+                <svg viewBox="0 0 14 14" aria-hidden="true">
+                  <path d="m7 1 5 2.5v3.8c0 3.1-2.1 5.2-5 6.2-2.9-1-5-3.1-5-6.2V3.5L7 1Z" />
+                  <path d="m4.8 7 1.4 1.4 2.8-2.9" />
+                </svg>
+                WEB CRYPTO API
+              </span>
+              <span>ZERO UPLOAD / ZERO STORAGE</span>
+              <span id="footer-clock">LOCAL 00:00:00</span>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <section class="how-section" id="how-it-works">
+        <div class="shell">
+          <div class="section-heading">
+            <div class="eyebrow">
+              <span>03</span>
+              <span class="eyebrow-rule"></span>
+              <span>UNDER THE HOOD</span>
+            </div>
+            <div class="section-heading-row">
+              <h2>没有魔法。<br />只有确定性。</h2>
+              <p>
+                标准 TOTP 算法，在浏览器内完成全部计算。没有网络请求，也没有需要相信的服务器。
+              </p>
+            </div>
+          </div>
+
+          <div class="how-grid">
+            <article class="how-card">
+              <span class="how-number">01</span>
+              <div class="how-icon" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <h3>时间切片</h3>
+              <p>当前 Unix 时间被切分为固定周期，默认每 30 秒产生一个新的验证窗口。</p>
+              <code>floor(unixTime / 30)</code>
+            </article>
+            <article class="how-card">
+              <span class="how-number">02</span>
+              <div class="how-icon how-icon--hash" aria-hidden="true">#</div>
+              <h3>本地签名</h3>
+              <p>共享密钥与时间计数器通过 HMAC 签名，截取动态偏移并取模生成数字。</p>
+              <code>HMAC-SHA1(secret, counter)</code>
+            </article>
+            <article class="how-card">
+              <span class="how-number">03</span>
+              <div class="how-icon how-icon--shield" aria-hidden="true">
+                <svg viewBox="0 0 32 32">
+                  <path d="M16 3 5 7.5v8.1c0 6.8 4.5 11.6 11 14.4 6.5-2.8 11-7.6 11-14.4V7.5L16 3Z" />
+                  <path d="m11 16 3.2 3.2L21.5 12" />
+                </svg>
+              </div>
+              <h3>零上传</h3>
+              <p>密钥只在内存中处理。关闭或刷新标签页后，密钥与验证码立即消失。</p>
+              <code>secret → browser only</code>
+            </article>
+          </div>
+
+          <div class="algorithm-strip">
+            <div class="algorithm-copy">
+              <span class="mini-label">PSEUDOCODE / 001</span>
+              <h3>验证码如何出现</h3>
+              <p>每一步都发生在你的设备上，与 Google Authenticator 等应用使用相同的开放标准。</p>
+            </div>
+            <pre class="algorithm-code" aria-label="TOTP 算法伪代码"><span class="code-dim">const</span> key <span class="code-dim">=</span> <span class="code-accent">base32Decode</span>(secret)
+<span class="code-dim">const</span> counter <span class="code-dim">=</span> floor(Date.now() / <span class="code-accent">30_000</span>)
+<span class="code-dim">const</span> digest <span class="code-dim">=</span> <span class="code-accent">HMAC</span>(key, counter)
+<span class="code-dim">const</span> offset <span class="code-dim">=</span> digest[<span class="code-accent">19</span>] &amp; <span class="code-accent">0x0f</span>
+code <span class="code-dim">=</span> <span class="code-accent">truncate</span>(digest, offset) % <span class="code-accent">10⁶</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="privacy-section" id="privacy">
+        <div class="shell privacy-inner">
+          <div>
+            <div class="eyebrow eyebrow--light">
+              <span>04</span>
+              <span class="eyebrow-rule"></span>
+              <span>PRIVATE BY DEFAULT</span>
+            </div>
+            <h2>你的密钥，<br />不该离开<br />你的设备。</h2>
+          </div>
+          <div class="privacy-copy">
+            <p>
+              Doriya 2FA 不收集密钥、不设置 Cookie、不接入分析服务。二维码解析和 TOTP
+              计算全部在浏览器本地完成。
+            </p>
+            <ul>
+              <li><span>01</span>不使用后端接口</li>
+              <li><span>02</span>不使用 localStorage</li>
+              <li><span>03</span>不发送任何遥测数据</li>
+            </ul>
+          </div>
+          <div class="privacy-stamp" aria-hidden="true">
+            <span>LOCAL</span>
+            <strong>100%</strong>
+            <span>NO UPLOAD</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <a class="footer-brand" href="#" aria-label="回到顶部">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M2 2h28v28H2z" fill="currentColor" />
+            <path d="M8 8h5v16H8zM19 8h5v5h-5zM19 17h5v7h-5z" fill="#f2f2ed" />
+          </svg>
+          <span>DORIYA / 2FA</span>
+        </a>
+        <p>为一次验证而存在。没有账户，也没有留下的理由。</p>
+        <div class="footer-meta">
+          <span>RFC 6238</span>
+          <span id="footer-year">2026</span>
+        </div>
+      </div>
+    </footer>
+
+    <dialog class="qr-dialog" id="qr-dialog" aria-labelledby="qr-title">
+      <div class="qr-dialog-shell">
+        <header class="qr-dialog-head">
+          <div>
+            <div class="eyebrow">
+              <span>QR</span>
+              <span class="eyebrow-rule"></span>
+              <span>LOCAL TRANSFER</span>
+            </div>
+            <h2 id="qr-title">二维码</h2>
+          </div>
+          <button class="dialog-close" id="close-qr" type="button" aria-label="关闭">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m4 4 12 12M16 4 4 16" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="qr-dialog-grid">
+          <section class="qr-import">
+            <span class="mini-label">IMPORT / 01</span>
+            <h3>扫描验证器二维码</h3>
+            <p>图片只会在本地解析，不会上传到任何地方。</p>
+            <div class="qr-dropzone" id="qr-dropzone" role="button" tabindex="0">
+              <input id="qr-file" type="file" accept="image/*" hidden />
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M4 12V4h8M20 4h8v8M28 20v8h-8M12 28H4v-8" />
+                <path d="M11 16h10M16 11v10" />
+              </svg>
+              <strong>拖入二维码图片</strong>
+              <span>或点击选择文件</span>
+            </div>
+            <div class="qr-separator"><span>OR</span></div>
+            <button class="button button--outline button--wide" id="start-camera" type="button">
+              <svg viewBox="0 0 18 18" aria-hidden="true">
+                <path d="M3 6h2l1-2h6l1 2h2v9H3V6Z" />
+                <circle cx="9" cy="10" r="2.5" />
+              </svg>
+              打开摄像头扫描
+            </button>
+            <div class="camera-shell" id="camera-shell" hidden>
+              <video id="camera-video" playsinline muted aria-label="二维码摄像头扫描画面"></video>
+              <div class="camera-scanline" aria-hidden="true"></div>
+              <span class="camera-instruction">将二维码放入扫描区域</span>
+              <button class="camera-stop" id="stop-camera" type="button">停止扫描</button>
+            </div>
+          </section>
+
+          <section class="qr-export">
+            <span class="mini-label">EXPORT / 02</span>
+            <h3>添加到其他验证器</h3>
+            <p>使用手机上的验证器应用扫描下方二维码。</p>
+            <div class="qr-canvas-wrap">
+              <canvas id="qr-canvas" width="220" height="220" aria-label="当前账户的 TOTP 二维码"></canvas>
+              <span class="qr-corner qr-corner--tl" aria-hidden="true"></span>
+              <span class="qr-corner qr-corner--tr" aria-hidden="true"></span>
+              <span class="qr-corner qr-corner--bl" aria-hidden="true"></span>
+              <span class="qr-corner qr-corner--br" aria-hidden="true"></span>
+            </div>
+            <button class="text-button text-button--center" id="copy-otpauth" type="button">
+              复制 otpauth:// 链接
+              <span aria-hidden="true">↗</span>
+            </button>
+          </section>
+        </div>
+
+        <footer class="qr-dialog-foot">
+          <span><i aria-hidden="true"></i>LOCAL PROCESSING</span>
+          <span>二维码包含密钥，请勿分享截图。</span>
+        </footer>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <span class="toast-mark" aria-hidden="true">✓</span>
+      <span class="toast-message">已复制验证码</span>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
