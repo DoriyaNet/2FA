@@ -8,7 +8,7 @@ const SECURITY_HEADERS = Object.freeze({
   "Referrer-Policy": "no-referrer",
   "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
   "Content-Security-Policy":
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src blob:; font-src 'self'; connect-src 'self'; form-action 'self' https://github.com; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
   "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Resource-Policy": "same-origin",
   "Origin-Agent-Cluster": "?1",

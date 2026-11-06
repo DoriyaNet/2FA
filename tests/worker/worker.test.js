@@ -30,6 +30,9 @@ describe("Cloudflare Worker entry", () => {
     expect(response.headers.get("Content-Security-Policy")).toContain(
       "frame-ancestors 'none'",
     );
+    expect(response.headers.get("Content-Security-Policy")).toContain(
+      "form-action 'self' https://github.com",
+    );
     expect(response.headers.get("Strict-Transport-Security")).toContain(
       "max-age=63072000",
     );
