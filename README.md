@@ -145,8 +145,8 @@ npm run dev:worker
 
 1. 在 Cloudflare **Workers & Pages** 中创建连接到本仓库的 Worker Builds。
 2. Build command 填写 `npm run build`，Deploy command 填写 `npx wrangler deploy`，Root directory 保持 `/`。
-3. 在 Worker 的 **Settings → Variables & Secrets** 中配置 `.env.example` 里的全部变量。`GITHUB_APP_CLIENT_SECRET`、`GITHUB_APP_PRIVATE_KEY` 和 `SESSION_SECRET` 应保存为加密 Secret。
-4. `APP_ORIGIN` 填写正式 HTTPS Origin，例如 `https://2fa.example.com`。这也会启用 Secure Cookie。
+3. 非敏感值 `APP_ORIGIN`、`GITHUB_APP_ID`、`GITHUB_APP_CLIENT_ID` 和 `GITHUB_APP_SLUG` 已写入 `wrangler.jsonc` 的 `vars`。如果部署到其他域名或 App，请同步修改。
+4. 在 Worker 的 **Settings → Variables & Secrets → Production** 中配置 `GITHUB_APP_CLIENT_SECRET`、`GITHUB_APP_PRIVATE_KEY` 和 `SESSION_SECRET`，三者都应保存为加密 Secret。不要把 Secret 写进 `wrangler.jsonc` 或 Build Variables。
 5. 在 Cloudflare 中绑定正式域名，并把 GitHub App 的 Callback URL / Setup URL 改为该域名下的 `/api/auth/callback` 与 `/api/github/setup`。
 6. 如果 Worker Builds 提示 Build Token 已删除或轮换，需要先在构建设置中更新 Build Token，再重试构建。
 
