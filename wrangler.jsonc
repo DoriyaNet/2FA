@@ -6,7 +6,7 @@
   "keep_vars": true,
   "vars": {
     "APP_ORIGIN": "https://2fa.doriya.net",
-    "GITHUB_APP_CLIENT_ID": "Iv23ctY49lRGDiPMsVqM",
+    "GITHUB_APP_CLIENT_ID": "Iv23ctY49IRGDtPMsVqM",
     "GITHUB_APP_ID": "5645624",
     "GITHUB_APP_SLUG": "doriya2fa"
   },
