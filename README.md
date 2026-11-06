@@ -21,7 +21,7 @@
 浏览器
   ├─ TOTP 生成、二维码解析、保险库加解密
   └─ /api/*
-       └─ Doriya 后端
+       └─ Doriya API（Vercel Functions / Cloudflare Workers）
             ├─ GitHub OAuth 与 GitHub App installation token
             └─ GitHub Contents API
                  └─ 用户私有仓库 /.doriya/vault.json
@@ -127,7 +127,38 @@ npm run build
 npm run preview
 ```
 
-开发服务器和预览服务器都挂载了同一个 API middleware。纯静态托管只能使用本地验证器功能；云端保险库需要 Node 服务端或 Vercel Functions。
+开发服务器和预览服务器都挂载了同一个 API middleware。纯静态托管只能使用本地验证器功能；云端保险库需要 Vercel Functions、Cloudflare Workers 或兼容的 Node 服务端。
+
+使用 Cloudflare Worker 本地运行时：
+
+```bash
+npm install
+copy .env.example .dev.vars
+npm run dev:worker
+```
+
+打开 `http://localhost:8787`。Wrangler 会同时加载 `dist` 静态资源和 `/api` Worker。
+
+## 部署到 Cloudflare Workers
+
+仓库中的 `wrangler.jsonc` 会把 `dist` 作为静态资源绑定到 `ASSETS`，并通过 `worker/index.js` 在同一个 Worker 中运行现有 API。Worker 名称默认为 `doriya2fa`；如果你的 Cloudflare Worker 使用其他名称，请同步修改 `wrangler.jsonc` 的 `name`。
+
+1. 在 Cloudflare **Workers & Pages** 中创建连接到本仓库的 Worker Builds。
+2. Build command 填写 `npm run build`，Deploy command 填写 `npx wrangler deploy`，Root directory 保持 `/`。
+3. 在 Worker 的 **Settings → Variables & Secrets** 中配置 `.env.example` 里的全部变量。`GITHUB_APP_CLIENT_SECRET`、`GITHUB_APP_PRIVATE_KEY` 和 `SESSION_SECRET` 应保存为加密 Secret。
+4. `APP_ORIGIN` 填写正式 HTTPS Origin，例如 `https://2fa.example.com`。这也会启用 Secure Cookie。
+5. 在 Cloudflare 中绑定正式域名，并把 GitHub App 的 Callback URL / Setup URL 改为该域名下的 `/api/auth/callback` 与 `/api/github/setup`。
+6. 如果 Worker Builds 提示 Build Token 已删除或轮换，需要先在构建设置中更新 Build Token，再重试构建。
+
+构建前建议运行：
+
+```bash
+npm test
+npm run build
+npm run check:worker
+```
+
+`npm run check:worker` 使用 Wrangler 做本地打包校验，不会发布。环境变量修改后需要在 Cloudflare 中重新部署。
 
 ## 部署到 Vercel
 
@@ -138,7 +169,7 @@ npm run preview
 5. 确认 GitHub App 的 Callback URL 和 Setup URL 指向同一个正式域名。
 6. 部署后完成一次真实 GitHub 登录、安装、私有仓库选择和保存测试。
 
-`api/[...path].js` 是 Vercel Functions 入口，`vercel.json` 提供 CSP、HSTS、COOP、CORP 等安全响应头。环境变量修改后需要重新部署。
+`api/[...path].js` 是 Vercel Functions 入口，`worker/index.js` 是 Cloudflare Workers 入口。两套入口共享同一份 `server/api.js` 业务代码；`vercel.json` 和 Worker 适配层都会提供 CSP、HSTS、COOP、CORP 等安全响应头。环境变量修改后需要重新部署。
 
 如果没有真实 GitHub App 凭据，只能验证本地 TOTP 和模拟 API；不要把“未配置”状态当作 GitHub 授权已通过。
 

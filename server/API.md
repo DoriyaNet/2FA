@@ -1,7 +1,17 @@
 # GitHub App Backend
 
-All routes below are served from `/api` by both Vercel and the Vite dev
-middleware. API responses use `Cache-Control: no-store`.
+All routes below are served from `/api` by Vercel Functions, Cloudflare
+Workers and the Vite dev middleware. API responses use
+`Cache-Control: no-store`.
+
+Runtime entry points:
+
+- Vercel Functions: `api/[...path].js`
+- Cloudflare Workers: `worker/index.js`
+- Local Vite middleware: `vite.config.js`
+
+All three adapters call the same `createApiHandler()` implementation in
+`server/api.js`.
 
 ## GitHub App configuration
 

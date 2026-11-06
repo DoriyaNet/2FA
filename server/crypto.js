@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import {
   createCipheriv,
   createDecipheriv,
@@ -20,7 +21,11 @@ export function base64urlDecode(value) {
   if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/.test(value)) {
     throw new Error("Invalid base64url value.");
   }
-  return Buffer.from(value, "base64url");
+  const decoded = Buffer.from(value, "base64url");
+  if (decoded.toString("base64url") !== value) {
+    throw new Error("Invalid base64url value.");
+  }
+  return decoded;
 }
 
 export function deriveSessionKey(secret) {

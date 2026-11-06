@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import { ApiError } from "./errors.js";
 
 export const REQUIRED_ENV_NAMES = Object.freeze([

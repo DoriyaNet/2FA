@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { createPrivateKey, sign } from "node:crypto";
 import { ApiError, GitHubHttpError, GitHubNetworkError, GitHubOAuthError } from "./errors.js";
 import { base64urlEncode } from "./crypto.js";

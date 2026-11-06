@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import { ApiError, GitHubHttpError, GitHubNetworkError, GitHubOAuthError } from "./errors.js";
 import { assertConfigured, getOAuthRedirectUri, readConfig } from "./config.js";
 import {
