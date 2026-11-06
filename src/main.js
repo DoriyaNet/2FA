@@ -1,6 +1,7 @@
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "./styles.css";
+import "./vault.css";
 
 import {
   buildOtpauthUri,
@@ -8,6 +9,7 @@ import {
   parseTotpInput,
   TotpInputError,
 } from "./totp.js";
+import { initVaultUI } from "./vault-ui.js";
 
 const DEMO_CONFIG = Object.freeze({
   secret: "JBSWY3DPEHPK3PXP",
@@ -621,6 +623,10 @@ async function startCamera() {
 }
 
 async function handleShareLink() {
+  if (activeConfig.source === "vault") {
+    showToast("云保险库账户不生成明文分享链接。", true);
+    return;
+  }
   const link = buildShareLink();
   await copyText(link, "私密链接已复制 · 密钥只位于 # 片段中");
 }
@@ -680,7 +686,7 @@ function setupNavigationHighlight() {
   const byId = new Map(
     links.map((link) => [link.getAttribute("href").slice(1), link]),
   );
-  const sections = ["generator", "how-it-works", "privacy"]
+  const sections = ["generator", "vault", "how-it-works", "privacy"]
     .map((id) => document.getElementById(id))
     .filter(Boolean);
 
@@ -740,6 +746,19 @@ function setupEventListeners() {
 async function initialize() {
   $("#footer-year").textContent = String(new Date().getFullYear());
   setupEventListeners();
+  initVaultUI({
+    loadConfig: (config) => applyConfig(config, { syncInput: false }),
+    getActiveConfig: () => ({ ...activeConfig }),
+    showToast,
+    onVaultLocked: () => {
+      if (activeConfig.source !== "vault") return;
+      void applyConfig({ ...DEMO_CONFIG }, { syncInput: false });
+    },
+    onVaultAccountRemoved: () => {
+      if (activeConfig.source !== "vault") return;
+      void applyConfig({ ...DEMO_CONFIG }, { syncInput: false });
+    },
+  });
 
   const loadedFromLink = await loadConfigFromLocation();
   if (!loadedFromLink) {

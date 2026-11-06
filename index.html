@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#f2f2ed" />
     <meta
       name="description"
-      content="Doriya 2FA 是一个完全在浏览器本地运行的在线 TOTP 验证器。粘贴密钥，即刻生成验证码，不上传、不保存。"
+      content="Doriya 2FA 是一个轻量的在线 TOTP 验证器。本地即时生成验证码，也可通过 GitHub App 将端到端加密的保险库同步到自己的私有仓库。"
     />
     <meta name="referrer" content="no-referrer" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -30,12 +30,27 @@
 
         <nav class="main-nav" aria-label="主导航">
           <a class="is-active" href="#generator">验证器</a>
+          <a href="#vault">GitHub 保险库</a>
           <a href="#how-it-works">工作原理</a>
           <a href="#privacy">隐私</a>
         </nav>
 
         <div class="header-actions">
-          <span class="local-state"><i aria-hidden="true"></i>本地运行</span>
+          <span class="local-state" id="cloud-state">
+            <i aria-hidden="true"></i>
+            <span id="cloud-state-label">本地就绪</span>
+          </span>
+          <button
+            class="button button--sm button--outline header-vault"
+            type="button"
+            data-action="open-vault"
+            aria-haspopup="dialog"
+          >
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M5 3h10v14H5zM8 3v9l2-1.4L12 12V3" />
+            </svg>
+            <span>GitHub 保险库</span>
+          </button>
           <button
             class="button button--sm button--outline header-scan"
             type="button"
@@ -64,7 +79,8 @@
               <span class="hero-emphasis">此刻生成。</span>
             </h1>
             <p class="hero-description hero-reveal" style="--delay: 0.18s">
-              一个不经过服务器的在线 TOTP 验证器。粘贴密钥，立即获取，关闭即忘。
+              一个轻量、锐利的在线 TOTP 验证器。即时本地生成，或用
+              GitHub 私有仓库跨设备同步端到端加密的保险库。
             </p>
             <div class="hero-actions hero-reveal" style="--delay: 0.25s">
               <a class="button button--dark" href="#generator">
@@ -73,8 +89,13 @@
                   <path d="M3 8h10M9 4l4 4-4 4" />
                 </svg>
               </a>
-              <button class="button button--ghost" type="button" data-action="open-qr">
-                从二维码导入
+              <button
+                class="button button--ghost"
+                type="button"
+                data-action="open-vault"
+                aria-haspopup="dialog"
+              >
+                连接 GitHub
               </button>
             </div>
           </div>
@@ -120,7 +141,7 @@
               </div>
               <div class="console-bar-right">
                 <span class="live-tag"><i aria-hidden="true"></i>LIVE</span>
-                <span>NO CLOUD</span>
+                <span>LOCAL FIRST</span>
               </div>
             </header>
 
@@ -263,6 +284,25 @@
                   </div>
                 </form>
 
+                <button
+                  class="vault-save-entry"
+                  type="button"
+                  data-action="open-vault"
+                  data-vault-prefill="active"
+                  aria-haspopup="dialog"
+                >
+                  <span class="vault-save-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20">
+                      <path d="M5 3h10v14H5zM8 3v9l2-1.4L12 12V3" />
+                    </svg>
+                  </span>
+                  <span class="vault-save-copy">
+                    <strong>保存到 GitHub 私有仓库</strong>
+                    <span>端到端加密 · 网站只转发密文</span>
+                  </span>
+                  <span class="vault-save-arrow" aria-hidden="true">↗</span>
+                </button>
+
                 <details class="advanced-settings">
                   <summary>
                     <span>高级参数</span>
@@ -303,8 +343,8 @@
                     <path d="m7.4 10 1.8 1.8 3.5-3.7" />
                   </svg>
                   <div>
-                    <strong>密钥不离开此标签页</strong>
-                    <span>无账号、无后端、无持久化存储。</span>
+                    <strong>明文只在浏览器里</strong>
+                    <span>本地计算；GitHub 保险库仅保存 AES-GCM 密文。</span>
                   </div>
                 </div>
 
@@ -323,10 +363,123 @@
                 </svg>
                 WEB CRYPTO API
               </span>
-              <span>ZERO UPLOAD / ZERO STORAGE</span>
+              <span>LOCAL CRYPTO / OPTIONAL ENCRYPTED SYNC</span>
               <span id="footer-clock">LOCAL 00:00:00</span>
             </footer>
           </article>
+        </div>
+      </section>
+
+      <section class="vault-section" id="vault">
+        <div class="shell">
+          <div class="vault-heading">
+            <div class="eyebrow">
+              <span>03</span>
+              <span class="eyebrow-rule"></span>
+              <span>GITHUB APP / BRING YOUR OWN REPO</span>
+            </div>
+            <div class="vault-heading-row">
+              <h2>仓库是你的。<br />明文也是你的。</h2>
+              <p>
+                绑定你自己的 GitHub 私有仓库。Doriya 只负责把浏览器里加密后的
+                `.doriya/vault.json` 写入仓库，无法读取你的密钥。
+              </p>
+            </div>
+          </div>
+
+          <div class="vault-board">
+            <article class="vault-board-main">
+              <header class="vault-board-head">
+                <span>DORIYA_VAULT / GITHUB_APP</span>
+                <span class="vault-board-state" id="vault-board-state">
+                  <i aria-hidden="true"></i>
+                  <span id="vault-board-state-label">未连接</span>
+                </span>
+              </header>
+
+              <div class="vault-board-body">
+                <div class="vault-board-copy">
+                  <span class="mini-label">CLIENT-SIDE ENCRYPTION</span>
+                  <h3 id="vault-board-title">连接你的 GitHub 保险库</h3>
+                  <p id="vault-board-description">
+                    授权一个 GitHub App installation，选择任意私有仓库。无需把仓库地址或访问令牌交给前端。
+                  </p>
+                  <button
+                    class="button button--dark"
+                    type="button"
+                    data-action="open-vault"
+                    aria-haspopup="dialog"
+                    id="vault-primary-button"
+                  >
+                    <span>打开 GitHub 保险库</span>
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </button>
+                </div>
+
+                <ol class="vault-steps" aria-label="保险库工作流程">
+                  <li>
+                    <span>01</span>
+                    <div>
+                      <strong>GitHub App 授权</strong>
+                      <p>只申请仓库内容读写权限，安装范围由你选择。</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span>02</span>
+                    <div>
+                      <strong>浏览器内加密</strong>
+                      <p>PBKDF2-SHA256 派生密钥，AES-256-GCM 封装账户。</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span>03</span>
+                    <div>
+                      <strong>提交到私有仓库</strong>
+                      <p>服务端使用短期 installation token 转发密文。</p>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </article>
+
+            <aside class="vault-file-preview" aria-label="加密文件预览">
+              <header>
+                <span>PRIVATE REPO</span>
+                <span>READ + WRITE</span>
+              </header>
+              <div class="vault-file-path">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M2.5 5.5h6l1.5 2H17.5v8.5h-15z" />
+                </svg>
+                <span>.doriya/vault.json</span>
+              </div>
+              <pre aria-label="保险库密文结构示例"><span class="vault-code-dim">{</span>
+  <span class="vault-code-key">"format"</span>: <span class="vault-code-string">"doriya-vault"</span>,
+  <span class="vault-code-key">"kdf"</span>: {
+    <span class="vault-code-key">"name"</span>: <span class="vault-code-string">"PBKDF2-SHA256"</span>,
+    <span class="vault-code-key">"iterations"</span>: <span class="vault-code-number">600000</span>
+  },
+  <span class="vault-code-key">"cipher"</span>: {
+    <span class="vault-code-key">"name"</span>: <span class="vault-code-string">"AES-256-GCM"</span>,
+    <span class="vault-code-key">"data"</span>: <span class="vault-code-redacted">"••••••••••••••••"</span>
+  }
+<span class="vault-code-dim">}</span></pre>
+              <footer>
+                <span class="vault-lock-mark" aria-hidden="true">
+                  <svg viewBox="0 0 20 20">
+                    <rect x="4" y="8" width="12" height="9" />
+                    <path d="M7 8V5.8a3 3 0 0 1 6 0V8" />
+                  </svg>
+                </span>
+                <span>
+                  <strong>密文离开浏览器</strong>
+                  <small>浏览器只提交加密后的 envelope</small>
+                </span>
+              </footer>
+            </aside>
+          </div>
         </div>
       </section>
 
@@ -334,14 +487,15 @@
         <div class="shell">
           <div class="section-heading">
             <div class="eyebrow">
-              <span>03</span>
+              <span>04</span>
               <span class="eyebrow-rule"></span>
               <span>UNDER THE HOOD</span>
             </div>
             <div class="section-heading-row">
               <h2>没有魔法。<br />只有确定性。</h2>
               <p>
-                标准 TOTP 算法，在浏览器内完成全部计算。没有网络请求，也没有需要相信的服务器。
+                标准 TOTP 计算在浏览器内完成。启用 GitHub 同步时，仅 OAuth
+                与密文经过本站后端。
               </p>
             </div>
           </div>
@@ -371,9 +525,9 @@
                   <path d="m11 16 3.2 3.2L21.5 12" />
                 </svg>
               </div>
-              <h3>零上传</h3>
-              <p>密钥只在内存中处理。关闭或刷新标签页后，密钥与验证码立即消失。</p>
-              <code>secret → browser only</code>
+              <h3>零明文上传</h3>
+              <p>手动模式只在内存中处理密钥；云保险库也只向 GitHub 提交密文。</p>
+              <code>secret → memory / vault → ciphertext</code>
             </article>
           </div>
 
@@ -396,27 +550,32 @@ code <span class="code-dim">=</span> <span class="code-accent">truncate</span>(d
         <div class="shell privacy-inner">
           <div>
             <div class="eyebrow eyebrow--light">
-              <span>04</span>
+              <span>05</span>
               <span class="eyebrow-rule"></span>
               <span>PRIVATE BY DEFAULT</span>
             </div>
-            <h2>你的密钥，<br />不该离开<br />你的设备。</h2>
+            <h2>明文，<br />不该离开<br />你的设备。</h2>
           </div>
           <div class="privacy-copy">
             <p>
-              Doriya 2FA 不收集密钥、不设置 Cookie、不接入分析服务。二维码解析和 TOTP
-              计算全部在浏览器本地完成。
+              本地模式不设置 Cookie、不接入分析服务。二维码解析和 TOTP
+              计算全部在浏览器完成。连接 GitHub 时，仅有登录会话 Cookie
+              与经过加密的保险库密文会经过本站后端。
+            </p>
+            <p>
+              这属于应用层的客户端加密，不构成可独立验证的零知识证明；
+              托管站点的前端代码仍由部署者提供。需要更强保证时，请自行部署并审计当前版本。
             </p>
             <ul>
-              <li><span>01</span>不使用后端接口</li>
-              <li><span>02</span>不使用 localStorage</li>
+              <li><span>01</span>浏览器只提交 AES-GCM 密文</li>
+              <li><span>02</span>不使用 localStorage 保存密钥</li>
               <li><span>03</span>不发送任何遥测数据</li>
             </ul>
           </div>
           <div class="privacy-stamp" aria-hidden="true">
-            <span>LOCAL</span>
-            <strong>100%</strong>
-            <span>NO UPLOAD</span>
+            <span>ENCRYPTED</span>
+            <strong>AES</strong>
+            <span>CIPHERTEXT ONLY</span>
           </div>
         </div>
       </section>
@@ -431,7 +590,7 @@ code <span class="code-dim">=</span> <span class="code-accent">truncate</span>(d
           </svg>
           <span>DORIYA / 2FA</span>
         </a>
-        <p>为一次验证而存在。没有账户，也没有留下的理由。</p>
+        <p>本地即可使用；需要同步时，把密文放进你自己的仓库。</p>
         <div class="footer-meta">
           <span>RFC 6238</span>
           <span id="footer-year">2026</span>
@@ -508,6 +667,380 @@ code <span class="code-dim">=</span> <span class="code-accent">truncate</span>(d
         <footer class="qr-dialog-foot">
           <span><i aria-hidden="true"></i>LOCAL PROCESSING</span>
           <span>二维码包含密钥，请勿分享截图。</span>
+        </footer>
+      </div>
+    </dialog>
+
+    <dialog class="vault-dialog" id="vault-dialog" aria-labelledby="vault-dialog-title">
+      <div class="vault-dialog-shell">
+        <header class="vault-dialog-head">
+          <div>
+            <div class="eyebrow">
+              <span>GH</span>
+              <span class="eyebrow-rule"></span>
+              <span>BRING YOUR OWN REPO</span>
+            </div>
+            <h2 id="vault-dialog-title">GitHub 保险库</h2>
+          </div>
+          <div class="vault-dialog-head-meta">
+            <span id="vault-dialog-repo">NOT CONNECTED</span>
+            <button
+              class="dialog-close"
+              id="vault-close"
+              type="button"
+              aria-label="关闭 GitHub 保险库"
+            >
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="m4 4 12 12M16 4 4 16" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="vault-notice" id="vault-notice" role="status" hidden>
+          <span class="vault-notice-mark" id="vault-notice-mark" aria-hidden="true">!</span>
+          <span id="vault-notice-message"></span>
+        </div>
+
+        <div class="vault-dialog-body">
+          <section class="vault-view vault-view--loading" data-vault-view="loading">
+            <span class="vault-spinner" aria-hidden="true"></span>
+            <div>
+              <span class="mini-label">CHECKING SESSION</span>
+              <h3>正在检查 GitHub 连接</h3>
+              <p>只读取固定路径 `.doriya/vault.json`，用于判断保险库是否已经创建。</p>
+            </div>
+          </section>
+
+          <section class="vault-view vault-view--intro" data-vault-view="disconnected" hidden>
+            <span class="vault-view-index" aria-hidden="true">01</span>
+            <div class="vault-view-lead">
+              <span class="mini-label" id="vault-config-pill">GITHUB APP</span>
+              <h3>把你的私有仓库<br />变成保险库。</h3>
+              <p>
+                通过 GitHub App 授权并只选择一个仓库。密码不会离开浏览器，
+                GitHub 访问令牌也不会返回给页面脚本。
+              </p>
+              <ul class="vault-permission-list">
+                <li><span>01</span>Repository contents · Read &amp; write</li>
+                <li><span>02</span>Metadata · Read-only</li>
+                <li><span>03</span>仅限你明确选择的 installation</li>
+              </ul>
+              <button class="button button--dark vault-main-action" id="vault-login-button" type="button">
+                <svg class="vault-github-mark" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.49 0-.24-.01-1.05-.02-1.9-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.66.35-1.12.64-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.39 9.39 0 0 1 12 6.95c.85 0 1.7.12 2.5.35 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.59.69.49A10.24 10.24 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z" />
+                </svg>
+                <span>使用 GitHub 登录</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              </button>
+              <p class="vault-inline-hint" id="vault-login-hint">
+                登录只用于确认身份，不会请求你的 GitHub 密码。
+              </p>
+            </div>
+            <div class="vault-intro-diagram" aria-hidden="true">
+              <div class="vault-diagram-node">
+                <span>BROWSER</span>
+                <strong>PLAINTEXT</strong>
+              </div>
+              <span class="vault-diagram-arrow">↓ AES-GCM</span>
+              <div class="vault-diagram-node vault-diagram-node--solid">
+                <span>DORIYA API</span>
+                <strong>CIPHERTEXT</strong>
+              </div>
+              <span class="vault-diagram-arrow">↓ contents:write</span>
+              <div class="vault-diagram-node">
+                <span>YOUR REPO</span>
+                <strong>.doriya/vault.json</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="vault-view vault-view--install" data-vault-view="installation" hidden>
+            <span class="vault-view-index" aria-hidden="true">02</span>
+            <div class="vault-view-lead">
+              <span class="mini-label">APP INSTALLATION</span>
+              <h3>先选择一个<br />GitHub 仓库范围。</h3>
+              <p>
+                GitHub App 已登录，但还没有可用的 installation。安装时可以只授权单个私有仓库。
+              </p>
+              <button class="button button--dark vault-main-action" id="vault-install-button" type="button">
+                <span>安装 GitHub App</span>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              </button>
+              <button class="text-button" id="vault-refresh-installations" type="button">
+                已完成安装，重新检查
+                <span aria-hidden="true">↻</span>
+              </button>
+            </div>
+            <div class="vault-aside-note">
+              <span>权限范围</span>
+              <strong>只选择<br />一个仓库</strong>
+              <p>Doriya 不列出公开仓库，也不会跨 installation 读取其他内容。</p>
+            </div>
+          </section>
+
+          <section class="vault-view vault-view--repo" data-vault-view="repository" hidden>
+            <div class="vault-view-heading">
+              <div>
+                <span class="mini-label">REPOSITORY TARGET</span>
+                <h3>选择保险库仓库</h3>
+              </div>
+              <div class="vault-account-chip" id="vault-session-user">
+                <span class="vault-account-chip-mark">GH</span>
+                <span>
+                  <strong>GitHub</strong>
+                  <small>已登录</small>
+                </span>
+              </div>
+            </div>
+
+            <form class="vault-repo-form" id="vault-repo-form">
+              <label>
+                <span>INSTALLATION</span>
+                <select id="vault-installation-select" required></select>
+              </label>
+              <label>
+                <span>PRIVATE REPOSITORY</span>
+                <select id="vault-repository-select" required>
+                  <option value="">正在读取仓库…</option>
+                </select>
+              </label>
+              <p class="vault-form-note">
+                保险库固定写入 <code>.doriya/vault.json</code>；只会读取这个路径。
+              </p>
+              <p class="vault-form-error" id="vault-repo-error" role="alert"></p>
+              <div class="vault-form-actions">
+                <button class="button button--dark" id="vault-repo-open" type="submit">
+                  <span>打开所选仓库</span>
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4" />
+                  </svg>
+                </button>
+                <button class="button button--outline" id="vault-manage-installations" type="button">
+                  管理安装
+                </button>
+              </div>
+            </form>
+
+            <div class="vault-repo-side">
+              <span class="mini-label">PATH / LOCKED</span>
+              <code>.doriya/vault.json</code>
+              <p>Doriya 只会写入加密 envelope；账户名称、发行方和密钥不会出现在外层元数据。</p>
+            </div>
+          </section>
+
+          <section class="vault-view vault-view--unlock" data-vault-view="unlock" hidden>
+            <div class="vault-unlock-panel">
+              <span class="vault-view-index" aria-hidden="true">03</span>
+              <div class="vault-view-lead">
+                <span class="mini-label" id="vault-unlock-kicker">UNLOCK VAULT</span>
+                <h3 id="vault-unlock-title">解锁保险库</h3>
+                <p id="vault-unlock-description">
+                  输入保险库密码。密码只在这个标签页内用于派生 AES 密钥。
+                </p>
+
+                <form class="vault-passphrase-form" id="vault-passphrase-form">
+                  <label for="vault-passphrase">保险库密码</label>
+                  <div class="vault-password-wrap">
+                    <input
+                      id="vault-passphrase"
+                      name="passphrase"
+                      type="password"
+                      autocomplete="current-password"
+                      minlength="12"
+                      spellcheck="false"
+                      required
+                      placeholder="至少 12 个字符"
+                    />
+                    <button
+                      class="vault-password-toggle"
+                      id="vault-password-toggle"
+                      type="button"
+                      aria-label="显示保险库密码"
+                    >
+                      <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M2 10s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5Z" />
+                        <circle cx="10" cy="10" r="2.2" />
+                      </svg>
+                    </button>
+                  </div>
+                  <label for="vault-passphrase-confirm" id="vault-confirm-label" hidden>
+                    再次输入密码
+                    <div class="vault-password-wrap">
+                      <input
+                        id="vault-passphrase-confirm"
+                        type="password"
+                        autocomplete="new-password"
+                        minlength="12"
+                        spellcheck="false"
+                        placeholder="重复保险库密码"
+                      />
+                    </div>
+                  </label>
+                  <p class="vault-form-note" id="vault-password-note">
+                    密码无法找回；忘记后只能删除仓库中的保险库文件并重新创建。
+                  </p>
+                  <p class="vault-form-error" id="vault-passphrase-error" role="alert"></p>
+                  <button class="button button--dark vault-main-action" id="vault-unlock-button" type="submit">
+                    <span>解锁保险库</span>
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <aside class="vault-unlock-meta">
+              <header>
+                <span>SELECTED REPO</span>
+                <span class="vault-private-tag"><i aria-hidden="true"></i>PRIVATE</span>
+              </header>
+              <div class="vault-selected-repo-card">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 3h11l3 3v15H5zM8 3v8l2.5-1.8L13 11V3" />
+                </svg>
+                <div>
+                  <strong id="vault-selected-repo-name">owner/repository</strong>
+                  <span>.doriya/vault.json</span>
+                </div>
+              </div>
+              <button class="text-button" id="vault-change-repo" type="button">
+                更换仓库
+                <span aria-hidden="true">↗</span>
+              </button>
+              <div class="vault-unlock-crypto">
+                <span>PBKDF2-SHA256</span>
+                <span>AES-256-GCM</span>
+                <span>600,000 ROUNDS</span>
+              </div>
+            </aside>
+          </section>
+
+          <section class="vault-view vault-workspace" data-vault-view="unlocked" hidden>
+            <aside class="vault-accounts-panel">
+              <header>
+                <div>
+                  <span class="mini-label">ENCRYPTED ACCOUNTS</span>
+                  <strong><span id="vault-account-count">0</span> ACCOUNTS</strong>
+                </div>
+                <span class="vault-live-state"><i aria-hidden="true"></i>UNLOCKED</span>
+              </header>
+              <div class="vault-account-list" id="vault-account-list"></div>
+              <div class="vault-accounts-empty" id="vault-accounts-empty" hidden>
+                <span>∅</span>
+                <strong>保险库还是空的</strong>
+                <p>把当前验证器账户加入后，会自动加密并提交。</p>
+              </div>
+              <footer>
+                <button class="text-button" id="vault-sync-button" type="button">
+                  从 GitHub 刷新
+                  <span aria-hidden="true">↻</span>
+                </button>
+                <button class="text-button" id="vault-lock-button" type="button">
+                  锁定并清除内存
+                  <span aria-hidden="true">×</span>
+                </button>
+                <button class="text-button" id="vault-logout-button" type="button">
+                  断开 GitHub
+                  <span aria-hidden="true">↪</span>
+                </button>
+              </footer>
+            </aside>
+
+            <div class="vault-workspace-main">
+              <div class="vault-selected-account" id="vault-selected-account">
+                <div class="vault-selected-empty">
+                  <span class="mini-label">ACCOUNT DETAIL</span>
+                  <h3>选择一个账户</h3>
+                  <p>选中后只在本机验证器中载入，不会再次上传密钥。</p>
+                </div>
+              </div>
+
+              <details class="vault-add-account" id="vault-add-account">
+                <summary>
+                  <span>
+                    <i aria-hidden="true">+</i>
+                    添加账户到保险库
+                  </span>
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="m4 6 4 4 4-4" />
+                  </svg>
+                </summary>
+                <form id="vault-account-form">
+                  <div class="vault-account-form-grid">
+                    <label>
+                      <span>发行方</span>
+                      <input id="vault-account-issuer" type="text" maxlength="80" required />
+                    </label>
+                    <label>
+                      <span>账户名称</span>
+                      <input id="vault-account-name" type="text" maxlength="160" required />
+                    </label>
+                    <label class="vault-field-wide">
+                      <span>Base32 密钥</span>
+                      <input
+                        id="vault-account-secret"
+                        type="password"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                        spellcheck="false"
+                        required
+                      />
+                    </label>
+                    <label>
+                      <span>算法</span>
+                      <select id="vault-account-algorithm">
+                        <option value="SHA-1">SHA-1</option>
+                        <option value="SHA-256">SHA-256</option>
+                        <option value="SHA-512">SHA-512</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>位数</span>
+                      <select id="vault-account-digits">
+                        <option value="6">6 位</option>
+                        <option value="8">8 位</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>周期</span>
+                      <select id="vault-account-period">
+                        <option value="30">30 秒</option>
+                        <option value="15">15 秒</option>
+                        <option value="60">60 秒</option>
+                      </select>
+                    </label>
+                  </div>
+                  <p class="vault-form-note">
+                    明文密钥只参与当前标签页内的加密，提交给 GitHub 的内容不含它。
+                  </p>
+                  <p class="vault-form-error" id="vault-account-error" role="alert"></p>
+                  <div class="vault-form-actions">
+                    <button class="button button--dark" id="vault-account-save" type="submit">
+                      <span>加密并提交</span>
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M3 8h10M9 4l4 4-4 4" />
+                      </svg>
+                    </button>
+                    <button class="button button--outline" id="vault-use-active" type="button">
+                      填入当前账户
+                    </button>
+                  </div>
+                </form>
+              </details>
+            </div>
+          </section>
+        </div>
+
+        <footer class="vault-dialog-foot">
+          <span><i aria-hidden="true"></i>CLIENT-SIDE VAULT</span>
+          <span id="vault-dialog-foot-note">密码不提交；后端只转发密文</span>
+          <span>RFC 6238 / PBKDF2 / AES-GCM</span>
         </footer>
       </div>
     </dialog>
